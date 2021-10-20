@@ -2,7 +2,7 @@
 title: "hw3"
 author: "Gunnar"
 date: "10/19/2021"
-output: git_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -55,6 +55,11 @@ instacart %>%
 ```
 
 Making a table of top three items for baking ingredients, dog food care, and packaged fruits and vegetables
+Steps:
+1. filter to relevant aisles
+2. group by aisle and identify top 3 rows
+3. Add ranking
+4. Pivot the table wider and unite products with purchase counts
 ```{r}
 top3_table <- instacart %>%
   filter(aisle == "dog food care" | aisle == "baking ingredients" | aisle == "packaged vegetables fruits") %>%
@@ -62,22 +67,42 @@ top3_table <- instacart %>%
   group_by(aisle) %>%
   count(product_name, sort = TRUE) %>%
   slice_max(order_by = n, n = 3) %>%
-  knitr::kable(caption = "Three Most Popular Items by Aisle", col.names = c("Aisle", "Product Name", "Count")
+  mutate(rank = rep(1:3, length.out = 3)) %>%
+  pivot_wider(names_from = aisle, values_from = c(product_name, n)) %>%
+  unite("baking ingredients", 5, 2, sep = " orders of ", remove = TRUE) %>%
+  unite("dog food care", 5, 3, sep = " orders of ", remove = TRUE)  %>%
+  unite("packaged vegetables and fruits", 5, 4, sep = " orders of ") %>%
+  knitr::kable(caption = "Three Most Popular Items by Aisle"
   )
 top3_table
 ```
 
 Making table of mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week
+
+Steps:
+1. Filter to relevant products
+2. Change days from numbers to strings
+3. group by day and product and find mean time
+4. pivot wider
 ```{r}
 hour_table <- instacart %>%
   filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>%
   mutate(order_dow = factor(order_dow, levels = 0:6, labels = c("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"))) %>%
   select(product_name, order_dow, order_hour_of_day) %>%
   group_by(product_name, order_dow) %>%
-  summarise(mean(order_hour_of_day, na.rm = TRUE)) %>%
-  knitr::kable(caption = "Three Most Popular Items by Aisle", col.names = c("Product Name", "Day of the Week", "Mean Order Time"), digits = 2
-  )
+  summarise(mean_time = mean(order_hour_of_day, na.rm = TRUE)) %>%
+  pivot_wider(names_from = order_dow, values_from = mean_time) %>%
+  knitr::kable(caption = "Three Most Popular Items by Aisle", digits = 2)
 hour_table
 ```
 
+**Problem 2**
+
+Loading BRFSS data
+```{r}
+library(p8105.datasets)
+data("brfss_smart2010")
+```
+
+Cleaning the data set
 
