@@ -1,0 +1,83 @@
+---
+title: "hw3"
+author: "Gunnar"
+date: "10/19/2021"
+output: git_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load libraries
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+**Problem 1**
+
+Loading dataset
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+Exploring instacart
+```{r}
+names(instacart)
+summary(instacart)
+
+instacart %>%
+  distinct(user_id) %>%
+  nrow()
+  
+instacart %>%
+  group_by(department) %>%
+  summarise(mean(order_hour_of_day, na.rm = TRUE))
+
+instacart %>%
+  count(aisle, sort = TRUE)
+```
+
+The instacart dataset has 1,384,617 observations over 15 variables. Key variables in the data set include product name, department, order hour of day, and reordered. For example, there were 131,209 distinct user ids and the mean order hour of the day for products from the alcohol department was 13.7. 
+
+There were 134 aisles and the aisles with the most orders were fresh vegetables with 150,609 orders, fresh fruits with 150,473 orders, and packaged vegetables and fruits with 78,493 orders. 
+
+Maing a plot of orders by aisle
+```{r}
+instacart %>%
+  filter(aisle >= 10000) %>%
+  ggplot(aes(y = forcats::fct_infreq(aisle))) +
+  geom_bar() +
+  labs(y = "Aisle", x = "Number of Orders") +
+  theme(axis.text.y = element_text(size = 3))
+```
+
+Making a table of top three items for baking ingredients, dog food care, and packaged fruits and vegetables
+```{r}
+top3_table <- instacart %>%
+  filter(aisle == "dog food care" | aisle == "baking ingredients" | aisle == "packaged vegetables fruits") %>%
+  select(aisle, product_name) %>%
+  group_by(aisle) %>%
+  count(product_name, sort = TRUE) %>%
+  slice_max(order_by = n, n = 3) %>%
+  knitr::kable(caption = "Three Most Popular Items by Aisle", col.names = c("Aisle", "Product Name", "Count")
+  )
+top3_table
+```
+
+Making table of mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week
+```{r}
+hour_table <- instacart %>%
+  filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>%
+  mutate(order_dow = factor(order_dow, levels = 0:6, labels = c("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"))) %>%
+  select(product_name, order_dow, order_hour_of_day) %>%
+  group_by(product_name, order_dow) %>%
+  summarise(mean(order_hour_of_day, na.rm = TRUE)) %>%
+  knitr::kable(caption = "Three Most Popular Items by Aisle", col.names = c("Product Name", "Day of the Week", "Mean Order Time"), digits = 2
+  )
+hour_table
+```
+
+
