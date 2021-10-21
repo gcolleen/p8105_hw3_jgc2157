@@ -49,16 +49,24 @@ There were 134 aisles and the aisles with the most orders were fresh vegetables 
 Maing a plot of orders by aisle
 ```{r}
 insta_plot <- instacart %>%
-  filter(aisle >= 10000) %>%
-  ggplot(aes(y = forcats::fct_infreq(aisle))) +
-  geom_bar() +
+  group_by(aisle) %>%
+  count(aisle) %>%
+  filter(n >= 10000) %>%
+  ungroup() %>%
+  mutate(aisle = forcats::fct_reorder(aisle, n)) %>%
+  ggplot(aes(y = aisle, x = n)) +
+  geom_col() +
   labs(y = "Aisle", x = "Number of Orders") +
-  theme(axis.text.y = element_text(size = 3)) +
+  theme(axis.text.y = element_text(size = 7.5)) +
   ggtitle("Number of Orders by Aisle")
 
 insta_plot
 ggsave("insta_plot.png")
 ```
+
+After plotting number of orders by aisle, we can see that fruits and vegetables are by far the most order items, followed by other food items like yogurt and cheese. Pantry staples like butter, oil, and pasta appear to be the least ordered.
+
+
 
 Making a table of top three items for baking ingredients, dog food care, and packaged fruits and vegetables.
 
