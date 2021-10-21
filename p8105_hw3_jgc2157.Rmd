@@ -2,11 +2,12 @@
 title: "hw3"
 author: "Gunnar"
 date: "10/19/2021"
-output: github_document
+output: 
+  github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, collapse = TRUE)
 ```
 
 
@@ -47,15 +48,21 @@ There were 134 aisles and the aisles with the most orders were fresh vegetables 
 
 Maing a plot of orders by aisle
 ```{r}
-instacart %>%
+insta_plot <- instacart %>%
   filter(aisle >= 10000) %>%
   ggplot(aes(y = forcats::fct_infreq(aisle))) +
   geom_bar() +
   labs(y = "Aisle", x = "Number of Orders") +
-  theme(axis.text.y = element_text(size = 3))
+  theme(axis.text.y = element_text(size = 3)) +
+  ggtitle("Number of Orders by Aisle")
+
+insta_plot
+ggsave("insta_plot.png")
 ```
 
-Making a table of top three items for baking ingredients, dog food care, and packaged fruits and vegetables
+Making a table of top three items for baking ingredients, dog food care, and packaged fruits and vegetables.
+
+
 Steps:
 1. filter to relevant aisles
 2. group by aisle and identify top 3 rows
@@ -146,6 +153,9 @@ spag_plot <- brfss %>%
   xlab("Year") +
   ylab("Average Data Value") +
   ggtitle("Spaghetti Plot of Average Data Values by State between 2002 and 2010")
+
+spag_plot
+ggsave("spag_plot.png")
 ```
 In the spaghetti plot of average data values by state between 2002 and 2010, many states fluctuate widely from year to year and it is difficult to discern which states are increasing or decresing in average data value over time as the 50 lines overlap.
 
@@ -161,6 +171,9 @@ facet_plot <- brfss %>%
   xlab("Data Value") +
   ggtitle("Distribution of New York Data Values in 2002 and 2010") +
   facet_grid(cols = vars(year))
+
+facet_plot
+ggsave("facet_plot.png")
 ```
 
 From the facet grid of New York data values in 2002 and 2010, data values were distributed around 27 with a left skew in 2002. In 2010, data values were less normally distributed as it appears there were an equal number of 0 values as 30 values.
