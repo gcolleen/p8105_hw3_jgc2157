@@ -14,6 +14,7 @@ Load libraries
 ```{r}
 library(tidyverse)
 library(janitor)
+library(readr)
 ```
 
 **Problem 1**
@@ -162,4 +163,59 @@ facet_plot <- brfss %>%
   facet_grid(cols = vars(year))
 ```
 
-From the facet grid of New York data values in 2002 and 2010, data values were distributed around 27 with a left skew in 2002. In 2010, data values were less normally distributed as it appears there were an equal number of 0 values as 30 values. 
+From the facet grid of New York data values in 2002 and 2010, data values were distributed around 27 with a left skew in 2002. In 2010, data values were less normally distributed as it appears there were an equal number of 0 values as 30 values.
+
+
+**Problem 3**
+Loading accel data set
+```{r}
+accel_data <- read_csv("Data/accel_data.csv") %>%
+  clean_names()
+```
+
+Pivoting the accel data set long
+```{r}
+accel_data <- accel_data %>%
+  pivot_longer(starts_with("activity"), names_to = "activity", values_to = "value") %>%
+  mutate(day_type = ifelse(day == "Friday" | day == "Thursday" | day == "Wednesday" | day == "Tuesday" | day == "Monday", 1, 0)) %>%
+  mutate(day = factor(day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))) %>%
+  mutate(day_type = factor(day_type, levels = c(0, 1), labels = c("weekend", "weekday")))
+
+```
+In the accel dataset, there are 50,400 observations over 6 variables: week, day_id, day, day_type, activity, and value. The data includes data on activity over 5 weeks with 72,000 observations per each day of the week combined over that time period.
+
+
+Part 2.
+Creating table of activity grouped by day
+
+Steps:
+1. Group data by day
+2. Sum all activity per day
+```{r}
+activity_table <- accel_data %>%
+  group_by(day) %>%
+  summarise(aggregate_activity = sum(value)) %>%
+  knitr::kable(caption = "Total Activity by Day", col.names = c("Day", "Total Activity"))
+
+activity_table
+```
+
+With total activity aggregated by day of the week, it appears that activity is highest on Wednesday, Thursday, and Friday, while activity is at its lowest on Saturday. 
+
+Part 3.
+Creating a plot of activity over time by day of the week
+
+```{r}
+time_plot <- accel_data %>%
+  mutate(activity = parse_number(activity)/60) %>%
+  ggplot(aes(x = activity, y = value)) +
+  geom_point(aes(color = day), alpha = 0.4) +
+  ylab("Activity Value") +
+  xlab("Hour of Day") +
+  ggtitle("Activity Level in a Day by Day of Week")
+
+time_plot
+ggsave("time_plot.png")
+```
+
+In the plot of activity throughout the day stratified by day of week, we can see that, overall, the activity value is under 2,500 the majority of the time. There are peaks of activity at around 7 to 10 hours and around 20 hours, with a higher peak of activity in the evening on Fridays than on other days. The most consistent pattern seen in the chart is that activity level is uniformly low across the week between about 23 hours and 5 hours, likely due to the subject sleeping. 
